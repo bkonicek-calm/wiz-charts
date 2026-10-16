@@ -46,7 +46,15 @@ git checkout gh-pages
 git checkout master $PACKAGE_FULL_NAME
 
 # Indexing and pushing
-helm repo index --url https://wiz-sec.github.io/charts/ .
+INDEX_TMP=$(mktemp -d)
+cp "$PACKAGE_FULL_NAME" "$INDEX_TMP/"
+if [ -f index.yaml ]; then
+    helm repo index "$INDEX_TMP" --url https://wiz-sec.github.io/charts/ --merge index.yaml
+else
+    helm repo index "$INDEX_TMP" --url https://wiz-sec.github.io/charts/
+fi
+cp "$INDEX_TMP/index.yaml" index.yaml
+rm -rf "$INDEX_TMP"
 git add .
 git commit -a -m "CircleCI: Upload ${PACKAGE} chart"
 git push -u origin gh-pages
